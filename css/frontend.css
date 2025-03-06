@@ -1,0 +1,22 @@
+/* Custom styling for the Swiper progress bar */
+.why-weight-slider .swiper-pagination-progressbar {
+    background: rgba(0, 0, 0, 0.1);
+    /* Light background for the empty part */
+}
+
+.why-weight-slider .swiper-pagination-progressbar-fill {
+    background: #333;
+    /* Dark color for the filled part */
+}
+
+/* Optional: Adjust the height of the progress bar */
+.why-weight-slider .swiper-pagination-progressbar {
+    height: 6px;
+    /* Thicker progress bar */
+}
+
+/* Optional: Round the edges of the progress bar */
+.why-weight-slider .swiper-pagination-progressbar,
+.why-weight-slider .swiper-pagination-progressbar-fill {
+    border-radius: 3px;
+}

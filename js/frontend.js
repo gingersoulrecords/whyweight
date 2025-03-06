@@ -5,50 +5,147 @@
 (function ($) {
     'use strict';
 
-    // Log when the script runs
-    console.log('WhyWeight plugin script loaded');
+    // Create global WhyWeight object
+    window.whyWeight = {
+        // Will hold the Swiper instance
+        swiper: null,
 
-    /**
-     * Initialize Swiper on elements with class 'why-weight-slider'
-     */
-    function initSwipers() {
-        console.log('WhyWeight: Initializing Swiper instances');
+        // Object to store assessment answers
+        answers: {},
 
-        // Find all elements with the 'why-weight-slider' class
-        const sliderContainers = document.querySelectorAll('.why-weight-slider');
+        // Initialize everything
+        init: function () {
+            console.log('WhyWeight: Initializing');
+            this.initSwiper();
+            this.bindNavButtons();
+            this.bindBMICalculator();
+            this.bindActivitySelect();
+        },
 
-        if (sliderContainers.length === 0) {
-            console.log('WhyWeight: No slider containers found');
-            return;
-        }
+        // Initialize the single Swiper instance
+        initSwiper: function () {
+            const sliderContainer = $('.ww-slider');
 
-        console.log(`WhyWeight: Found ${sliderContainers.length} slider containers`);
+            if (sliderContainer.length === 0) {
+                console.log('WhyWeight: No slider container found');
+                return;
+            }
 
-        // Initialize each slider
-        sliderContainers.forEach(function (container, index) {
-            console.log(`WhyWeight: Initializing slider #${index + 1}`);
+            console.log('WhyWeight: Found slider container');
 
-            const slider = new Swiper(container, {
+            // Initialize Swiper
+            this.swiper = new Swiper(sliderContainer[0], {
                 slidesPerView: 1,
                 spaceBetween: 30,
-                loop: true,
+                loop: false,
 
-                // Navigation arrows
-                navigation: {
-                    nextEl: '.swiper-button-next',
-                    prevEl: '.swiper-button-prev',
+                // Add fade effect
+                effect: 'fade',
+                fadeEffect: {
+                    crossFade: true
                 },
 
-                // Pagination
+                // Progress bar pagination
                 pagination: {
                     el: '.swiper-pagination',
-                    clickable: true,
+                    type: 'progressbar'
                 }
             });
 
-            console.log(`WhyWeight: Slider #${index + 1} initialized`);
-        });
-    }
+            console.log('WhyWeight: Swiper initialized');
+        },
+
+        // Bind click handlers to navigation buttons
+        bindNavButtons: function () {
+            // Bind previous button/link clicks
+            $('.ww-prev-link').on('click', function (e) {
+                e.preventDefault();
+                if (window.whyWeight.swiper) {
+                    window.whyWeight.swiper.slidePrev();
+                    console.log('WhyWeight: Navigated to previous slide');
+                }
+            });
+
+            // Bind next button clicks
+            $('.ww-next-button').on('click', function (e) {
+                e.preventDefault();
+                if (window.whyWeight.swiper) {
+                    window.whyWeight.swiper.slideNext();
+                    console.log('WhyWeight: Navigated to next slide');
+                }
+            });
+
+            console.log('WhyWeight: Navigation buttons bound');
+        },
+
+        // Bind BMI calculator functionality
+        bindBMICalculator: function () {
+            const heightFeetInput = $('#height-feet');
+            const heightInchesInput = $('#height-inches');
+            const weightInput = $('#weight-lbs');
+            const bmiResult = $('#bmi-result');
+
+            const calculateBMI = function () {
+                const feet = parseFloat(heightFeetInput.val()) || 0;
+                const inches = parseFloat(heightInchesInput.val()) || 0;
+                const weight = parseFloat(weightInput.val()) || 0;
+
+                // Calculate total height in inches
+                const totalInches = (feet * 12) + inches;
+
+                if (totalInches > 0 && weight > 0) {
+                    // BMI formula: (weight in pounds * 703) / (height in inches)²
+                    const bmi = ((weight * 703) / (totalInches * totalInches)).toFixed(1);
+                    bmiResult.val(bmi);
+
+                    // Save BMI to answers
+                    window.whyWeight.saveAnswer('bmi', bmi);
+                } else {
+                    bmiResult.val('');
+                }
+            };
+
+            // Bind input events
+            heightFeetInput.on('input', calculateBMI);
+            heightInchesInput.on('input', calculateBMI);
+            weightInput.on('input', calculateBMI);
+
+            // Save individual measurements when they change
+            heightFeetInput.on('change', function () {
+                window.whyWeight.saveAnswer('height-feet', $(this).val());
+            });
+
+            heightInchesInput.on('change', function () {
+                window.whyWeight.saveAnswer('height-inches', $(this).val());
+            });
+
+            weightInput.on('change', function () {
+                window.whyWeight.saveAnswer('weight-lbs', $(this).val());
+            });
+        },
+
+        // Bind activity select functionality
+        bindActivitySelect: function () {
+            $('#activity').on('change', function () {
+                window.whyWeight.saveAnswer('activity', $(this).val());
+            });
+        },
+
+        // Save an answer to the answers object
+        saveAnswer: function (questionId, answer) {
+            this.answers[questionId] = answer;
+            console.log('WhyWeight: Saved answer', questionId, answer);
+            console.log('WhyWeight: Current answers:', this.answers);
+        },
+
+        // Go to a specific slide
+        goToSlide: function (index) {
+            if (this.swiper) {
+                this.swiper.slideTo(index);
+                console.log('WhyWeight: Navigated to slide', index);
+            }
+        }
+    };
 
     // Document ready
     $(function () {
@@ -58,8 +155,8 @@
         if (typeof Swiper === 'function') {
             console.log('WhyWeight: Swiper is loaded successfully');
 
-            // Initialize sliders
-            initSwipers();
+            // Initialize WhyWeight
+            window.whyWeight.init();
         } else {
             console.error('WhyWeight: Swiper is not loaded');
         }

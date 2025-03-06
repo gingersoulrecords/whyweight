@@ -32,6 +32,13 @@ function why_weight_enqueue_scripts()
         WHY_WEIGHT_VERSION
     );
 
+    wp_enqueue_style(
+        'why-weight-custom-css',
+        WHY_WEIGHT_PLUGIN_URL . 'css/frontend.css',
+        ['swiper-css'],
+        WHY_WEIGHT_VERSION
+    );
+
     // Make sure jQuery is loaded
     wp_enqueue_script('jquery');
 
