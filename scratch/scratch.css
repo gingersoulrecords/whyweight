@@ -1,0 +1,269 @@
+/* @design_system */
+/* @forms */
+
+/** Typography **/
+.ww-title {
+    font-size: var(--fontSize12);
+    line-height: var(--lineHeightBig);
+    font-weight: 500;
+    letter-spacing: var(--letterSpacingHeading);
+    color: var(--contrast-highest);
+    margin-bottom: var(--marginBottomHeading);
+}
+
+.ww-description {
+    font-size: var(--fontSize4);
+    margin-bottom: var(--marginBottomReadable);
+}
+
+.ww-note {
+    font-size: var(--fontSize2);
+    margin-bottom: var(--marginBottomReadable);
+}
+
+/** Navigation and Buttons **/
+.ww-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.ww-btn {
+    width: 100%;
+    border: 1px solid var(--p-400);
+    border-radius: 0.375rem !important;
+    padding: 1em 1.5em;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: var(--p-400, #4b9cd3);
+    /* Fallback color if variable not defined */
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.ww-btn:hover {
+    background-color: var(--p-500, #3a7ca8);
+    /* Darker shade */
+}
+
+/* Styling for the back link container */
+.ww-back-container {
+    margin-top: 16px;
+    text-align: center;
+}
+
+/* Styling for the back link */
+.ww-prev-link,
+[data-navigate="prev"] {
+    color: var(--contrast-aa) !important;
+    text-decoration: none;
+    font-size: 14px;
+    display: inline-block;
+    padding: 5px 0;
+    transition: color 0.2s ease;
+}
+
+.ww-prev-link:hover,
+[data-navigate="prev"]:hover {
+    color: var(--contrast-highest);
+    text-decoration: underline;
+}
+
+/** Form styles **/
+.ww-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0rem;
+}
+
+@media(min-width:768px) {
+    .ww-form {
+        flex-direction: row;
+        gap: 2rem;
+    }
+}
+
+.ww-form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+}
+
+.ww-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--contrast-high, #333);
+}
+
+.ww-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.ww-input {
+    padding: 0.75rem;
+    border: 2px solid var(--p-200, #e0e0e0);
+    border-radius: 0.375rem !important;
+    font-size: 1rem;
+    width: 100%;
+}
+
+.ww-input:focus {
+    border-color: var(--p-400, #4b9cd3) !important;
+    outline: none;
+}
+
+input,
+select {
+    border-radius: 0.375rem !important;
+    border-color: var(--p-200) !important;
+}
+
+/** Button groups for choices **/
+.ww-button-group {
+    display: flex;
+    gap: 1rem;
+    margin: 2rem 0;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Individual choice buttons */
+.ww-choice-btn {
+    padding: 1rem 2rem;
+    border: 2px solid var(--p-200, #e0e0e0);
+    border-radius: 0.375rem !important;
+    background-color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 120px;
+    transition: all 0.3s ease;
+}
+
+.ww-choice-btn:hover {
+    border-color: var(--p-300, #c0c0c0);
+    background-color: #f8f8f8;
+}
+
+/* Active state for selected button */
+.ww-choice-btn.active {
+    border-color: var(--p-400, #4b9cd3);
+    background-color: var(--p-100, #f0f7ff);
+    color: var(--p-400, #4b9cd3);
+}
+
+/* Radio style selections */
+.ww-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.ww-radio {
+    display: flex;
+    padding: 1rem;
+    border: 2px solid var(--p-200, #e0e0e0);
+    border-radius: 0.375rem !important;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-items: center;
+}
+
+.ww-radio:hover {
+    border-color: var(--p-300, #c0c0c0);
+    background-color: #f8f8f8;
+}
+
+.ww-radio.active {
+    border-color: var(--p-400, #4b9cd3);
+    background-color: var(--p-100, #f0f7ff);
+}
+
+.ww-radio input[type="radio"] {
+    margin-right: 0.75rem;
+}
+
+.ww-radio-text {
+    font-weight: 500;
+}
+
+/* Additional styles for the summary results */
+.ww-summary {
+    margin-top: 1rem;
+}
+
+.ww-subtitle {
+    font-size: var(--fontSize8);
+    font-weight: 500;
+    margin: 1.5rem 0 1rem;
+    color: var(--contrast-high);
+}
+
+.ww-summary-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0 0 2rem;
+}
+
+.ww-summary-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--p-100);
+    font-size: var(--fontSize4);
+}
+
+.ww-summary-item:last-child {
+    border-bottom: none;
+}
+
+.ww-summary-item strong {
+    color: var(--contrast-high);
+    margin-right: 0.5rem;
+}
+
+.ww-recommendations {
+    background-color: var(--p-50);
+    border-left: 4px solid var(--p-400);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin: 1rem 0 2rem;
+}
+
+.ww-recommendation {
+    margin-bottom: 1rem;
+    font-size: var(--fontSize4);
+}
+
+.ww-recommendation:last-child {
+    margin-bottom: 0;
+}
+
+/** Slides **/
+.swiper-slide {
+    padding: 10%;
+    display: flex;
+    flex-direction: column;
+    /*   height: 100svh; */
+}
+
+.aviator-iframe .swiper-wrapper {
+    display: block;
+}
+
+.aviator-iframe .swiper-slide {
+    outline: 5px dotted red;
+    outline-offset: -5px;
+}
+
+.swiper-horizontal>.swiper-pagination-progressbar {
+    width: 80%;
+    left: 10%;
+}
+
+:root {
+    --fontFamilyText: Satoshi;
+}

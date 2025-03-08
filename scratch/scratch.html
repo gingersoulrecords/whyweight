@@ -1,0 +1,270 @@
+<div id="assessment" class="padding:0_5%">
+    <div class="ww-slider max-width:40rem mx:auto">
+        <div class="swiper-wrapper">
+            <!-- Introduction Slide -->
+            <div class="swiper-slide" data-slide-name="intro">
+                <h2 class="ww-title">Weight Management Assessment</h2>
+                <p class="ww-description">Find the right path on your weight management journey with this short
+                    assessment.</p>
+                <p class="ww-description">We'll help you understand your options and learn about common weight
+                    management medications that might be right for you.</p>
+                <p class="ww-note">Your answers will help us provide personalized recommendations based on your specific
+                    situation.</p>
+                <div class="ww-buttons">
+                    <button class="ww-btn" data-navigate="next">Start Assessment</button>
+                </div>
+            </div>
+
+            <!-- BMI Calculator Slide -->
+            <div class="swiper-slide" data-slide-name="bmi">
+                <h2 class="ww-title">Body Mass Index (BMI)</h2>
+                <p class="ww-description">Your BMI helps determine which weight management options may be most
+                    appropriate for you.</p>
+                <div class="ww-form">
+                    <!-- Height inputs -->
+                    <div class="ww-form-group">
+                        <label class="ww-label">Height:</label>
+                        <div class="ww-input-group">
+                            <input type="number" id="height-feet" class="ww-input" placeholder="ft" min="4" max="8"
+                                data-question-id="height-feet">
+                            <input type="number" id="height-inches" class="ww-input" placeholder="in" min="0" max="11"
+                                data-question-id="height-inches">
+                        </div>
+                    </div>
+                    <!-- Weight input -->
+                    <div class="ww-form-group">
+                        <label class="ww-label">Weight:</label>
+                        <div class="ww-input-group">
+                            <input type="number" id="weight-lbs" class="ww-input" placeholder="lbs" min="50" max="500"
+                                data-question-id="weight-lbs">
+                        </div>
+                    </div>
+                    <!-- BMI Result -->
+                    <div class="ww-form-group">
+                        <label class="ww-label">Your BMI:</label>
+                        <input type="text" id="bmi-result" class="ww-input" readonly="">
+                    </div>
+                </div>
+                <div class="ww-buttons">
+                    <button class="ww-btn" data-navigate="next">Next</button>
+                    <div class="ww-back-container">
+                        <a href="#" data-navigate="prev">← go back</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pregnancy Check Slide with Explicit Navigation Paths -->
+            <div class="swiper-slide" data-slide-name="pregnancy">
+                <h2 class="ww-title">Are you pregnant or breastfeeding?</h2>
+                <p class="ww-description">Some weight management medications are not recommended during pregnancy or
+                    breastfeeding.</p>
+
+                <div class="ww-radio-group">
+                    <label class="ww-radio">
+                        <input type="radio" name="pregnancy" value="no">
+                        <span class="ww-radio-text" data-question-id="pregnancy" data-value="no"
+                            data-navigate="binge-eating">No</span>
+                    </label>
+
+                    <label class="ww-radio">
+                        <input type="radio" name="pregnancy" value="yes">
+                        <span class="ww-radio-text" data-question-id="pregnancy" data-value="yes"
+                            data-navigate="pregnancy-info">Yes</span>
+                    </label>
+                </div>
+
+                <!-- No Next button needed since we have explicit navigation -->
+                <div class="ww-back-container">
+                    <a href="#" data-navigate="prev">← go back</a>
+                </div>
+            </div>
+
+            <!-- Pregnancy Information Slide -->
+            <div class="swiper-slide" data-slide-name="pregnancy-info">
+                <h2 class="ww-title">Your health and safety come first.</h2>
+                <p class="ww-description">During pregnancy or while breastfeeding, it's important to focus on safe,
+                    proven strategies for maintaining a healthy weight. We recommend working with your healthcare
+                    provider to develop a personalized plan that includes appropriate nutrition and gentle exercise.</p>
+                <p class="ww-description">Weight management medications are typically not recommended during this time
+                    due to potential risks to you and your baby.</p>
+                <div class="ww-buttons">
+                    <button class="ww-btn" data-navigate="results">See Recommendations</button>
+                    <div class="ww-back-container">
+                        <a href="#" data-navigate="prev">← go back</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Binge Eating Slide -->
+            <div class="swiper-slide" data-slide-name="binge-eating">
+                <h2 class="ww-title">Do you experience binge eating?</h2>
+                <p class="ww-description">Binge eating is when a person eats a large amount of food quickly, and feels
+                    unable to stop, even if they're not hungry. This can lead to feelings of guilt or distress.</p>
+
+                <div class="ww-radio-group">
+                    <label class="ww-radio">
+                        <input type="radio" name="binge-eating" value="no">
+                        <span class="ww-radio-text" data-question-id="binge-eating" data-value="no"
+                            data-navigate="next">No</span>
+                    </label>
+
+                    <label class="ww-radio">
+                        <input type="radio" name="binge-eating" value="yes">
+                        <span class="ww-radio-text" data-question-id="binge-eating" data-value="yes"
+                            data-navigate="next">Yes</span>
+                    </label>
+                </div>
+
+                <div class="ww-back-container">
+                    <a href="#" data-navigate="prev">← go back</a>
+                </div>
+            </div>
+
+            <!-- Exercise Program Slide -->
+            <div class="swiper-slide" data-slide-name="exercise-program">
+                <h2 class="ww-title">Have you tried an exercise program(s)?</h2>
+                <p class="ww-description">Understanding your exercise history helps us provide better recommendations.
+                </p>
+
+                <div class="ww-radio-group">
+                    <label class="ww-radio">
+                        <input type="radio" name="exercise-program" value="no">
+                        <span class="ww-radio-text" data-question-id="exercise-program" data-value="no"
+                            data-navigate="next">No</span>
+                    </label>
+
+                    <label class="ww-radio">
+                        <input type="radio" name="exercise-program" value="yes">
+                        <span class="ww-radio-text" data-question-id="exercise-program" data-value="yes"
+                            data-navigate="next">Yes</span>
+                    </label>
+                </div>
+
+                <div class="ww-back-container">
+                    <a href="#" data-navigate="prev">← go back</a>
+                </div>
+            </div>
+
+            <!-- Reduced Calorie Diet Slide -->
+            <div class="swiper-slide" data-slide-name="reduced-calorie">
+                <h2 class="ww-title">Have you tried a reduced-calorie diet?</h2>
+                <p class="ww-description">Understanding your diet history helps us provide better recommendations.
+
+                </p>
+
+                <div class="ww-radio-group">
+                    <label class="ww-radio">
+                        <input type="radio" name="reduced-calorie" value="no">
+                        <span class="ww-radio-text" data-question-id="reduced-calorie" data-value="no"
+                            data-navigate="next">No</span>
+                    </label>
+
+                    <label class="ww-radio">
+                        <input type="radio" name="reduced-calorie" value="yes">
+                        <span class="ww-radio-text" data-question-id="reduced-calorie" data-value="yes"
+                            data-navigate="next">Yes</span>
+                    </label>
+                </div>
+
+                <div class="ww-back-container">
+                    <a href="#" data-navigate="prev">← go back</a>
+                </div>
+            </div>
+
+            <!-- Thyroid Slide -->
+            <div class="swiper-slide" data-slide-name="thyroid">
+                <h2 class="ww-title">Do you have a history of MEN 2 or medullary thyroid cancer?</h2>
+                <p class="ww-description">This information is important as some medications may not be appropriate for
+                    patients with these conditions.
+
+                </p>
+
+                <div class="ww-radio-group">
+                    <label class="ww-radio">
+                        <input type="radio" name="thyroid" value="no">
+                        <span class="ww-radio-text" data-question-id="thyroid" data-value="no"
+                            data-navigate="next">No</span>
+                    </label>
+
+                    <label class="ww-radio">
+                        <input type="radio" name="thyroid" value="yes">
+                        <span class="ww-radio-text" data-question-id="thyroid" data-value="yes"
+                            data-navigate="next">Yes</span>
+                    </label>
+                </div>
+
+                <div class="ww-back-container">
+                    <a href="#" data-navigate="prev">← go back</a>
+                </div>
+            </div>
+
+            <!-- Gallbladder Slide -->
+            <div class="swiper-slide" data-slide-name="gallbladder">
+                <h2 class="ww-title">Do you have active gallbladder issues or a history of pancreatitis?</h2>
+                <p class="ww-description">This information helps determine which medications may be safe and appropriate
+                    for you.
+
+                </p>
+
+                <div class="ww-radio-group">
+                    <label class="ww-radio">
+                        <input type="radio" name="gallbladder" value="no">
+                        <span class="ww-radio-text" data-question-id="gallbladder" data-value="no"
+                            data-navigate="next">No</span>
+                    </label>
+
+                    <label class="ww-radio">
+                        <input type="radio" name="gallbladder" value="yes">
+                        <span class="ww-radio-text" data-question-id="gallbladder" data-value="yes"
+                            data-navigate="next">Yes</span>
+                    </label>
+                </div>
+
+                <div class="ww-back-container">
+                    <a href="#" data-navigate="prev">← go back</a>
+                </div>
+            </div>
+
+            <!-- Seizures Slide -->
+            <div class="swiper-slide" data-slide-name="seizures">
+                <h2 class="ww-title">Do you have a history of seizures or use opiate pain medication?</h2>
+                <p class="ww-description">This information is important for determining medication safety and potential
+                    interactions.
+
+                </p>
+
+                <div class="ww-radio-group">
+                    <label class="ww-radio">
+                        <input type="radio" name="seizures" value="no">
+                        <span class="ww-radio-text" data-question-id="seizures" data-value="no"
+                            data-navigate="next">No</span>
+                    </label>
+
+                    <label class="ww-radio">
+                        <input type="radio" name="seizures" value="yes">
+                        <span class="ww-radio-text" data-question-id="seizures" data-value="yes"
+                            data-navigate="next">Yes</span>
+                    </label>
+                </div>
+
+                <div class="ww-back-container">
+                    <a href="#" data-navigate="prev">← go back</a>
+                </div>
+            </div>
+
+            <!-- Results Slide -->
+            <div class="swiper-slide" data-slide-name="results">
+                <h2 class="ww-title">Your Assessment Results</h2>
+                <div id="results-content">
+                    <!-- Results will be dynamically inserted here -->
+                </div>
+                <div class="ww-buttons">
+                    <button class="ww-btn" data-navigate="intro">Start Over</button>
+                </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+</div>
