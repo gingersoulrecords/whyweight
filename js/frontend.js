@@ -27,8 +27,23 @@
             this.bindSummaryGeneration();
         },
 
+        originalSlideOrder: [], // Will store slide names in their original DOM order
+        isNavigating: false, // Global navigation lock
+
+
         // Create a mapping of slide names to slide indices
         initSlideMap: function () {
+            // First, capture the original DOM order of slides
+            this.originalSlideOrder = [];
+            $('.swiper-slide').each(function (index) {
+                const slideName = $(this).data('slide-name');
+                if (slideName) {
+                    window.whyWeight.originalSlideOrder.push(slideName);
+                    console.log(`WhyWeight: Original slide order ${index}: "${slideName}"`);
+                }
+            });
+
+            // Then build the slide map as before
             $('.swiper-slide').each(function (index) {
                 const slideName = $(this).data('slide-name');
                 if (slideName) {
@@ -36,6 +51,24 @@
                     console.log(`WhyWeight: Mapped slide "${slideName}" to index ${index}`);
                 }
             });
+        },
+
+        getNextSlideName: function (currentSlideName) {
+            const currentIndex = this.originalSlideOrder.indexOf(currentSlideName);
+
+            if (currentIndex === -1) {
+                console.error(`WhyWeight: Could not find slide "${currentSlideName}" in original order`);
+                return null;
+            }
+
+            if (currentIndex < this.originalSlideOrder.length - 1) {
+                const nextSlideName = this.originalSlideOrder[currentIndex + 1];
+                console.log(`WhyWeight: Next slide after "${currentSlideName}" is "${nextSlideName}" (based on original DOM order)`);
+                return nextSlideName;
+            } else {
+                console.log(`WhyWeight: "${currentSlideName}" is the last slide in the original order`);
+                return null;
+            }
         },
 
         // Initialize the single Swiper instance
@@ -93,60 +126,69 @@
         bindGlobalHandlers: function () {
             const self = this;
 
-            // Handle choice buttons that store answers (delegated event)
-            $(document).on('click', '.ww-choice-btn', function () {
-                const $this = $(this);
-                const questionId = $this.data('question-id');
-                const answer = $this.data('value');
-                const autoNavigate = $this.data('auto-navigate') !== undefined;
-
-                // If this button is part of a group, handle group styling
-                const $group = $this.closest('.ww-button-group, .ww-radio-group');
-                if ($group.length) {
-                    $group.find('.ww-choice-btn, .ww-radio').removeClass('active');
-                    $this.addClass('active');
-                }
-
-                // Save the answer if we have a question ID
-                if (questionId) {
-                    self.saveAnswer(questionId, answer);
-                }
-
-                // If button has a navigate attribute, go to that slide
-                const navigateTo = $this.data('navigate');
-                if (navigateTo) {
-                    self.navigateByName(navigateTo);
-                } else if (autoNavigate) {
-                    // Auto-navigate to next slide if auto-navigate is enabled
-                    self.swiper.slideNext();
-                }
-            });
+            // Remove any existing handlers to prevent duplication
+            $(document).off('click', '[data-navigate]');
 
             // Handle navigation buttons (delegated event)
             $(document).on('click', '[data-navigate]', function (e) {
-                e.preventDefault();
-                const navigateAction = $(this).data('navigate');
-
-                switch (navigateAction) {
-                    case 'next':
-                        self.swiper.slideNext();
-                        break;
-                    case 'prev':
-                        self.swiper.slidePrev();
-                        break;
-                    case 'intro':
-                        // Special case for "Start Over" button
-                        self.resetAssessment();
-                        break;
-                    default:
-                        // Assume it's a slide name
-                        self.navigateByName(navigateAction);
+                // Skip if this is a radio button (they're handled separately)
+                if ($(this).hasClass('ww-radio') || $(this).closest('.ww-radio').length > 0) {
+                    console.log('WhyWeight: Skipping global navigation for radio button');
+                    return;
                 }
 
-                console.log(`WhyWeight: Navigated ${navigateAction}`);
+                // Skip if navigation is already in progress
+                if (self.isNavigating) {
+                    console.log('WhyWeight: Navigation in progress, ignoring click');
+                    return;
+                }
+
+                e.preventDefault();
+                const navigateAction = $(this).data('navigate');
+                console.log('WhyWeight: Global navigation triggered:', navigateAction);
+
+                // Set navigation lock
+                self.isNavigating = true;
+                console.log('WhyWeight: Navigation lock activated');
+
+                // Use setTimeout to ensure this completes after other handlers
+                setTimeout(function () {
+                    switch (navigateAction) {
+                        case 'next':
+                            const currentSlideName = $('.swiper-slide').eq(self.swiper.activeIndex).data('slide-name');
+                            const nextSlideName = self.getNextSlideName(currentSlideName);
+
+                            console.log(`WhyWeight: Global next navigation: ${currentSlideName} -> ${nextSlideName}`);
+
+                            if (nextSlideName) {
+                                self.navigateByName(nextSlideName);
+                            } else {
+                                self.swiper.slideNext();
+                            }
+                            break;
+                        case 'prev':
+                            self.swiper.slidePrev();
+                            break;
+                        case 'intro':
+                            // Special case for "Start Over" button
+                            self.resetAssessment();
+                            break;
+                        default:
+                            // Assume it's a slide name
+                            self.navigateByName(navigateAction);
+                    }
+
+                    console.log(`WhyWeight: Navigated ${navigateAction}`);
+
+                    // Release navigation lock after a delay
+                    setTimeout(function () {
+                        self.isNavigating = false;
+                        console.log('WhyWeight: Navigation lock released');
+                    }, 300);
+                }, 50);
             });
 
-            console.log('WhyWeight: Global handlers bound');
+            console.log('WhyWeight: Global handlers bound with improved navigation control');
         },
 
         // Bind radio button functionality for auto-navigation
@@ -158,6 +200,12 @@
 
             // Use click handler instead of change event - this works regardless of previous state
             $(document).on('click', '.ww-radio', function (e) {
+                // Don't do anything if we're already navigating
+                if (self.isNavigating) {
+                    console.log('WhyWeight: Navigation in progress, ignoring radio click');
+                    return;
+                }
+
                 const $radio = $(this);
                 const $input = $radio.find('input[type="radio"]');
                 const $span = $radio.find('.ww-radio-text');
@@ -185,16 +233,43 @@
                     self.saveAnswer(questionId, answer);
                 }
 
-                // Always handle navigation based on data-navigate
+                // CRITICAL FIX: Stop event propagation to prevent the global [data-navigate] handler from firing
                 if (navigateTo) {
-                    console.log('Navigating to:', navigateTo);
-                    if (navigateTo === 'next') {
-                        self.swiper.slideNext();
-                    } else {
-                        self.navigateByName(navigateTo);
-                    }
+                    e.stopPropagation();
+
+                    // Set navigation lock
+                    self.isNavigating = true;
+                    console.log('WhyWeight: Navigation lock activated');
+
+                    // Process navigation after a small delay
+                    setTimeout(function () {
+                        console.log('WhyWeight: Processing radio button navigation to:', navigateTo);
+
+                        if (navigateTo === 'next') {
+                            const currentSlideName = $('.swiper-slide').eq(self.swiper.activeIndex).data('slide-name');
+                            const nextSlideName = self.getNextSlideName(currentSlideName);
+
+                            console.log(`WhyWeight: Radio next navigation: ${currentSlideName} -> ${nextSlideName}`);
+
+                            if (nextSlideName) {
+                                self.navigateByName(nextSlideName);
+                            } else {
+                                self.swiper.slideNext();
+                            }
+                        } else {
+                            self.navigateByName(navigateTo);
+                        }
+
+                        // Release navigation lock after a delay
+                        setTimeout(function () {
+                            self.isNavigating = false;
+                            console.log('WhyWeight: Navigation lock released');
+                        }, 300);
+                    }, 50);
                 }
             });
+
+            console.log('WhyWeight: Radio button handlers bound with improved navigation control');
         },
 
         // Bind BMI calculator functionality
@@ -437,6 +512,12 @@
             } else {
                 console.error('WhyWeight: Could not find slide named', slideName);
             }
+        },
+
+        clearNavigationLock: function () {
+            // Emergency function to clear navigation lock if something goes wrong
+            this.isNavigating = false;
+            console.log('WhyWeight: Navigation lock cleared by emergency function');
         }
     };
 
