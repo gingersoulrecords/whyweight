@@ -1,5 +1,5 @@
 /**
- * WhyWeight Frontend JS - Simplified version with fixes
+ * WhyWeight Frontend JS - With Answer Data Attributes for Styling
  */
 
 (function ($) {
@@ -51,6 +51,7 @@
 
             // Initialize Swiper
             this.swiper = new Swiper(sliderContainer[0], {
+                autoHeight: true,
                 slidesPerView: 1,
                 spaceBetween: 30,
                 loop: false,
@@ -77,6 +78,11 @@
 
                 if (slideName === 'results') {
                     self.generateSummary();
+                }
+
+                // When navigating to contact slide, populate the textarea
+                if (slideName === 'contact') {
+                    self.populateTextarea();
                 }
             });
 
@@ -147,35 +153,46 @@
         bindRadioButtons: function () {
             const self = this;
 
-            $(document).on('change', '.ww-radio input[type="radio"]', function () {
+            // Remove any existing event handlers to prevent duplicates
+            $(document).off('click', '.ww-radio');
+
+            // Use click handler instead of change event - this works regardless of previous state
+            $(document).on('click', '.ww-radio', function (e) {
                 const $radio = $(this);
-                const $parent = $radio.closest('.ww-radio');
-                const $span = $parent.find('.ww-radio-text');
+                const $input = $radio.find('input[type="radio"]');
+                const $span = $radio.find('.ww-radio-text');
+
+                // Check/select the radio input
+                $input.prop('checked', true);
 
                 // Update active state for styling
                 $radio.closest('.ww-radio-group').find('.ww-radio').removeClass('active');
-                $parent.addClass('active');
+                $radio.addClass('active');
 
-                // Get data from the associated span
+                // Get data from the span
                 const questionId = $span.data('question-id');
                 const answer = $span.data('value');
                 const navigateTo = $span.data('navigate');
+
+                console.log('Radio clicked:', {
+                    questionId,
+                    answer,
+                    navigateTo
+                });
 
                 // Save the answer
                 if (questionId) {
                     self.saveAnswer(questionId, answer);
                 }
 
-                // Auto-navigate if specified
+                // Always handle navigation based on data-navigate
                 if (navigateTo) {
+                    console.log('Navigating to:', navigateTo);
                     if (navigateTo === 'next') {
                         self.swiper.slideNext();
                     } else {
                         self.navigateByName(navigateTo);
                     }
-                } else if ($parent.data('auto-navigate') !== undefined || $span.data('auto-navigate') !== undefined) {
-                    // Auto-navigate to the next slide
-                    self.swiper.slideNext();
                 }
             });
         },
@@ -202,6 +219,24 @@
 
                     // Save BMI to answers
                     window.whyWeight.saveAnswer('bmi', bmi);
+
+                    // Also add a calculated BMI range
+                    const bmiValue = parseFloat(bmi);
+                    let bmiRange = '';
+
+                    if (bmiValue < 18.5) {
+                        bmiRange = 'underweight';
+                    } else if (bmiValue >= 18.5 && bmiValue < 25) {
+                        bmiRange = 'normal';
+                    } else if (bmiValue >= 25 && bmiValue < 30) {
+                        bmiRange = 'overweight';
+                    } else if (bmiValue >= 30) {
+                        bmiRange = 'obese';
+                    }
+
+                    if (bmiRange) {
+                        window.whyWeight.saveAnswer('bmi-range', bmiRange);
+                    }
                 } else {
                     bmiResult.val('');
                 }
@@ -234,25 +269,41 @@
             $(document).on('click', '[data-navigate="results"]', function () {
                 self.generateSummary();
             });
+
+            // When navigating to contact slide, populate the textarea
+            $(document).on('click', '[data-navigate="contact"]', function () {
+                self.populateTextarea();
+            });
         },
 
-        // Generate and display a simple summary of all answers
+        // Generate and display a summary (keep empty for now)
         generateSummary: function () {
-            const summaryContent = $('#results-content');
-            if (!summaryContent.length) {
-                console.error('WhyWeight: Results content container not found');
+            console.log('WhyWeight: Summary generation requested');
+            // We won't replace any content, just log this call
+        },
+
+        // Populate the textarea with answers data
+        populateTextarea: function () {
+            const textarea = $('#wsf-1-field-5');
+            if (!textarea.length) {
+                console.error('WhyWeight: Textarea #wsf-1-field-5 not found');
                 return;
             }
 
-            let html = '<div class="ww-summary">';
-            html += '<h3 class="ww-subtitle">Your Assessment Summary</h3>';
-            html += '<ul class="ww-summary-list">';
+            // Create a formatted string of all answers
+            let summaryText = 'Assessment Summary:\n\n';
 
             // Create simpler answer mappings for display
             const answerLabels = {
                 'bmi': 'BMI',
+                'bmi-range': 'BMI Category',
                 'pregnancy': 'Pregnant or breastfeeding',
-                'binge-eating': 'Binge eating'
+                'binge-eating': 'Binge eating',
+                'exercise-program': 'Tried exercise program',
+                'reduced-calorie': 'Tried reduced-calorie diet',
+                'thyroid': 'History of MEN 2 or medullary thyroid cancer',
+                'gallbladder': 'Active gallbladder issues or history of pancreatitis',
+                'seizures': 'History of seizures or opiate pain medication use'
             };
 
             // Format yes/no answers
@@ -265,11 +316,11 @@
             if (this.answers['height-feet'] || this.answers['height-inches']) {
                 const feet = this.answers['height-feet'] || '0';
                 const inches = this.answers['height-inches'] || '0';
-                html += `<li class="ww-summary-item"><strong>Height:</strong> ${feet}' ${inches}"</li>`;
+                summaryText += `Height: ${feet}' ${inches}"\n`;
             }
 
             if (this.answers['weight-lbs']) {
-                html += `<li class="ww-summary-item"><strong>Weight:</strong> ${this.answers['weight-lbs']} lbs</li>`;
+                summaryText += `Weight: ${this.answers['weight-lbs']} lbs\n`;
             }
 
             // Loop through remaining answers
@@ -286,16 +337,17 @@
                 let displayValue = answer;
                 if (yesNoFormat[answer]) {
                     displayValue = yesNoFormat[answer];
+                } else if (questionId === 'bmi-range') {
+                    // Capitalize the first letter of BMI range
+                    displayValue = answer.charAt(0).toUpperCase() + answer.slice(1);
                 }
 
-                html += `<li class="ww-summary-item"><strong>${label}:</strong> ${displayValue}</li>`;
+                summaryText += `${label}: ${displayValue}\n`;
             }
 
-            html += '</ul>';
-
-            // Insert the HTML
-            summaryContent.html(html);
-            console.log('WhyWeight: Summary generated');
+            // Set the textarea value
+            textarea.val(summaryText);
+            console.log('WhyWeight: Textarea populated with assessment data');
         },
 
         // Reset all assessment data and UI elements
@@ -315,7 +367,10 @@
             $('.ww-choice-btn, .ww-radio').removeClass('active');
 
             // Clear any dynamically generated content
-            $('#results-content').empty();
+            $('#wsf-1-field-5').val('');
+
+            // Remove all data attributes from the assessment container except the original ones
+            this.resetDataAttributes();
 
             // Go to the first slide
             this.goToSlide(0);
@@ -323,11 +378,47 @@
             console.log('WhyWeight: Assessment reset complete');
         },
 
-        // Save an answer to the answers object
+        // Reset all data attributes added to the assessment container
+        resetDataAttributes: function () {
+            const $assessmentContainer = $('#assessment');
+
+            if ($assessmentContainer.length) {
+                // Get all attributes
+                const attributes = Array.from($assessmentContainer[0].attributes);
+
+                // Filter for data attributes that start with 'data-answer-'
+                attributes.forEach(attr => {
+                    if (attr.name.startsWith('data-answer-')) {
+                        $assessmentContainer.removeAttr(attr.name);
+                    }
+                });
+
+                console.log('WhyWeight: Assessment data attributes reset');
+            }
+        },
+
+        // Save an answer to the answers object and update data attributes
         saveAnswer: function (questionId, answer) {
             this.answers[questionId] = answer;
+
+            // Also update the assessment container's data attributes
+            this.updateDataAttributes(questionId, answer);
+
             console.log('WhyWeight: Saved answer', questionId, answer);
             console.log('WhyWeight: Current answers:', this.answers);
+        },
+
+        // Update data attributes on the assessment container for a specific answer
+        updateDataAttributes: function (questionId, answer) {
+            const $assessmentContainer = $('#assessment');
+
+            if ($assessmentContainer.length) {
+                // Set the data attribute with the answer
+                $assessmentContainer.attr(`data-answer-${questionId}`, answer);
+                console.log(`WhyWeight: Set data-answer-${questionId}="${answer}" on assessment container`);
+            } else {
+                console.error('WhyWeight: Assessment container not found');
+            }
         },
 
         // Go to a specific slide by index

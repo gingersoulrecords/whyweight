@@ -3,7 +3,7 @@
         <div class="swiper-wrapper">
             <!-- Introduction Slide -->
             <div class="swiper-slide" data-slide-name="intro">
-                <h2 class="ww-title">Weight Management Assessment</h2>
+                <h2 class="ww-title">{{assessment_title}}</h2>
                 <p class="ww-description">Find the right path on your weight management journey with this short
                     assessment.</p>
                 <p class="ww-description">We'll help you understand your options and learn about common weight
@@ -17,8 +17,9 @@
 
             <!-- BMI Calculator Slide -->
             <div class="swiper-slide" data-slide-name="bmi">
-                <h2 class="ww-title">Body Mass Index (BMI)</h2>
-                <p class="ww-description">Your BMI helps determine which weight management options may be most
+                <h2 class="ww-title">Let’s get your BMI.</h2>
+                <p class="ww-description">Your BMI (Body Mass Index) helps determine which weight management options may
+                    be most
                     appropriate for you.</p>
                 <div class="ww-form">
                     <!-- Height inputs -->
@@ -229,9 +230,7 @@
             <div class="swiper-slide" data-slide-name="seizures">
                 <h2 class="ww-title">Do you have a history of seizures or use opiate pain medication?</h2>
                 <p class="ww-description">This information is important for determining medication safety and potential
-                    interactions.
-
-                </p>
+                    interactions.</p>
 
                 <div class="ww-radio-group">
                     <label class="ww-radio">
@@ -254,13 +253,40 @@
 
             <!-- Results Slide -->
             <div class="swiper-slide" data-slide-name="results">
-                <h2 class="ww-title">Your Assessment Results</h2>
+                <h2 class="ww-title">Here are our recommendations.</h2>
+                <p class="ww-description">Based on your responses, you may be eligible for the following medications:
+                </p>
                 <div id="results-content">
                     <!-- Results will be dynamically inserted here -->
+
+                    <div class="display:grid md:grid-cols:2">
+
+                        <div id="semaglutide-result" class="ww-result-item">
+
+                            <p>Semaglutide</p>
+
+                        </div>
+
+
+                    </div>
+
+
                 </div>
                 <div class="ww-buttons">
                     <button class="ww-btn" data-navigate="intro">Start Over</button>
                 </div>
+            </div>
+
+            <!-- Contact Slide -->
+            <div class="swiper-slide" data-slide-name="contact">
+                <h2 class="ww-title">Questions? Let's talk about your results.</h2>
+                <p class="ww-description">We understand that choosing the right weight management options can be
+                    overwhelming. There’s a lot of noise out there.</p>
+                <p class="ww-description">We’re here to help. Send us your information below, and we'll schedule a call
+                    to review your results and answer any questions you may have.</p>
+                <p class="ww-description">You won’t be signed up for any email lists by submitting this form.</p>
+                <!-- Contact Form Shortcode -->
+                [ws_form id="1"]
             </div>
 
             <!-- Progress bar -->

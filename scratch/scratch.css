@@ -242,6 +242,11 @@ select {
     margin-bottom: 0;
 }
 
+.ww-result-item {
+    border: 1px solid var(--p-200);
+
+}
+
 /** Slides **/
 .swiper-slide {
     padding: 10%;
