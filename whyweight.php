@@ -4,7 +4,7 @@
  * Plugin Name: WhyWeight
  * Plugin URI: https://yourwebsite.com/why-weight
  * Description: A WordPress plugin using jQuery and Swiper.js
- * Version: 1.0.0
+ * Version: 1.0.2
  * Author: Your Name
  * Author URI: https://yourwebsite.com
  * Text Domain: why-weight
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('WHY_WEIGHT_VERSION', '1.0.0');
+define('WHY_WEIGHT_VERSION', '1.0.2');
 define('WHY_WEIGHT_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WHY_WEIGHT_PLUGIN_URL', plugin_dir_url(__FILE__));
 

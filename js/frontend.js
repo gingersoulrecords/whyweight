@@ -18,7 +18,7 @@
 
         // Initialize everything
         init: function () {
-            console.log('WhyWeight: Initializing');
+            //console.log('WhyWeight: Initializing');
             this.initSlideMap();
             this.initSwiper();
             this.bindGlobalHandlers();
@@ -39,7 +39,7 @@
                 const slideName = $(this).data('slide-name');
                 if (slideName) {
                     window.whyWeight.originalSlideOrder.push(slideName);
-                    console.log(`WhyWeight: Original slide order ${index}: "${slideName}"`);
+                    //console.log(`WhyWeight: Original slide order ${index}: "${slideName}"`);
                 }
             });
 
@@ -48,7 +48,7 @@
                 const slideName = $(this).data('slide-name');
                 if (slideName) {
                     window.whyWeight.slideMap[slideName] = index;
-                    console.log(`WhyWeight: Mapped slide "${slideName}" to index ${index}`);
+                    //console.log(`WhyWeight: Mapped slide "${slideName}" to index ${index}`);
                 }
             });
         },
@@ -63,10 +63,10 @@
 
             if (currentIndex < this.originalSlideOrder.length - 1) {
                 const nextSlideName = this.originalSlideOrder[currentIndex + 1];
-                console.log(`WhyWeight: Next slide after "${currentSlideName}" is "${nextSlideName}" (based on original DOM order)`);
+                //console.log(`WhyWeight: Next slide after "${currentSlideName}" is "${nextSlideName}" (based on original DOM order)`);
                 return nextSlideName;
             } else {
-                console.log(`WhyWeight: "${currentSlideName}" is the last slide in the original order`);
+                //console.log(`WhyWeight: "${currentSlideName}" is the last slide in the original order`);
                 return null;
             }
         },
@@ -76,11 +76,11 @@
             const sliderContainer = $('.ww-slider');
 
             if (sliderContainer.length === 0) {
-                console.log('WhyWeight: No slider container found');
+                //console.log('WhyWeight: No slider container found');
                 return;
             }
 
-            console.log('WhyWeight: Found slider container');
+            //console.log('WhyWeight: Found slider container');
 
             // Initialize Swiper
             this.swiper = new Swiper(sliderContainer[0], {
@@ -119,7 +119,7 @@
                 }
             });
 
-            console.log('WhyWeight: Swiper initialized');
+            //console.log('WhyWeight: Swiper initialized');
         },
 
         // Bind global handlers using event delegation
@@ -133,36 +133,39 @@
             $(document).on('click', '[data-navigate]', function (e) {
                 // Skip if this is a radio button (they're handled separately)
                 if ($(this).hasClass('ww-radio') || $(this).closest('.ww-radio').length > 0) {
-                    console.log('WhyWeight: Skipping global navigation for radio button');
+                    //console.log('WhyWeight: Skipping global navigation for radio button');
                     return;
                 }
 
                 // Skip if navigation is already in progress
                 if (self.isNavigating) {
-                    console.log('WhyWeight: Navigation in progress, ignoring click');
+                    //console.log('WhyWeight: Navigation in progress, ignoring click');
                     return;
                 }
 
                 e.preventDefault();
                 const navigateAction = $(this).data('navigate');
-                console.log('WhyWeight: Global navigation triggered:', navigateAction);
+                //console.log('WhyWeight: Global navigation triggered:', navigateAction);
 
                 // Set navigation lock
                 self.isNavigating = true;
-                console.log('WhyWeight: Navigation lock activated');
+                //console.log('WhyWeight: Navigation lock activated');
 
                 // Use setTimeout to ensure this completes after other handlers
                 setTimeout(function () {
                     switch (navigateAction) {
                         case 'next':
                             const currentSlideName = $('.swiper-slide').eq(self.swiper.activeIndex).data('slide-name');
-                            const nextSlideName = self.getNextSlideName(currentSlideName);
 
-                            console.log(`WhyWeight: Global next navigation: ${currentSlideName} -> ${nextSlideName}`);
+                            // Get explicit routing from checkRouting function
+                            const targetSlideName = self.checkRouting(currentSlideName);
 
-                            if (nextSlideName) {
-                                self.navigateByName(nextSlideName);
+                            //console.log(`WhyWeight: Global next navigation: ${currentSlideName} -> ${targetSlideName}`);
+
+                            if (targetSlideName) {
+                                self.navigateByName(targetSlideName);
                             } else {
+                                // Fallback to default next slide behavior
                                 self.swiper.slideNext();
                             }
                             break;
@@ -178,17 +181,17 @@
                             self.navigateByName(navigateAction);
                     }
 
-                    console.log(`WhyWeight: Navigated ${navigateAction}`);
+                    //console.log(`WhyWeight: Navigated ${navigateAction}`);
 
                     // Release navigation lock after a delay
                     setTimeout(function () {
                         self.isNavigating = false;
-                        console.log('WhyWeight: Navigation lock released');
+                        //console.log('WhyWeight: Navigation lock released');
                     }, 300);
                 }, 50);
             });
 
-            console.log('WhyWeight: Global handlers bound with improved navigation control');
+            //console.log('WhyWeight: Global handlers bound with improved navigation control');
         },
 
         // Bind radio button functionality for auto-navigation
@@ -202,7 +205,7 @@
             $(document).on('click', '.ww-radio', function (e) {
                 // Don't do anything if we're already navigating
                 if (self.isNavigating) {
-                    console.log('WhyWeight: Navigation in progress, ignoring radio click');
+                    //console.log('WhyWeight: Navigation in progress, ignoring radio click');
                     return;
                 }
 
@@ -220,17 +223,24 @@
                 // Get data from the span
                 const questionId = $span.data('question-id');
                 const answer = $span.data('value');
-                const navigateTo = $span.data('navigate');
+                let navigateTo = $span.data('navigate');
 
-                console.log('Radio clicked:', {
-                    questionId,
-                    answer,
-                    navigateTo
-                });
+                // console.log('Radio clicked:', {
+                //     questionId,
+                //     answer,
+                //     navigateTo
+                // });
 
                 // Save the answer
                 if (questionId) {
                     self.saveAnswer(questionId, answer);
+
+                    // Handle special case for pregnancy "yes" answer
+                    if (questionId === 'pregnancy' && answer === 'yes') {
+                        // Override the navigateTo to point to not-now instead of pregnancy-info
+                        navigateTo = 'not-now';
+                        //console.log('WhyWeight: Pregnancy is yes, routing to not-now slide');
+                    }
                 }
 
                 // CRITICAL FIX: Stop event propagation to prevent the global [data-navigate] handler from firing
@@ -239,17 +249,19 @@
 
                     // Set navigation lock
                     self.isNavigating = true;
-                    console.log('WhyWeight: Navigation lock activated');
+                    //console.log('WhyWeight: Navigation lock activated');
 
                     // Process navigation after a small delay
                     setTimeout(function () {
-                        console.log('WhyWeight: Processing radio button navigation to:', navigateTo);
+                        //console.log('WhyWeight: Processing radio button navigation to:', navigateTo);
 
                         if (navigateTo === 'next') {
                             const currentSlideName = $('.swiper-slide').eq(self.swiper.activeIndex).data('slide-name');
-                            const nextSlideName = self.getNextSlideName(currentSlideName);
 
-                            console.log(`WhyWeight: Radio next navigation: ${currentSlideName} -> ${nextSlideName}`);
+                            // Check for conditional routing
+                            const nextSlideName = self.checkRouting(currentSlideName);
+
+                            //console.log(`WhyWeight: Radio next navigation: ${currentSlideName} -> ${nextSlideName}`);
 
                             if (nextSlideName) {
                                 self.navigateByName(nextSlideName);
@@ -263,21 +275,46 @@
                         // Release navigation lock after a delay
                         setTimeout(function () {
                             self.isNavigating = false;
-                            console.log('WhyWeight: Navigation lock released');
+                            //console.log('WhyWeight: Navigation lock released');
                         }, 300);
                     }, 50);
                 }
             });
 
-            console.log('WhyWeight: Radio button handlers bound with improved navigation control');
+            //console.log('WhyWeight: Radio button handlers bound with improved navigation control');
         },
 
         // Bind BMI calculator functionality
+        // Add this function to the whyWeight object
         bindBMICalculator: function () {
             const heightFeetInput = $('#height-feet');
             const heightInchesInput = $('#height-inches');
             const weightInput = $('#weight-lbs');
             const bmiResult = $('#bmi-result');
+            const nextButton = $('.swiper-slide[data-slide-name="bmi"] button[data-navigate="next"]');
+
+            // Initially disable the next button
+            nextButton.attr('disabled', 'disabled').addClass('disabled');
+
+            const validateForm = function () {
+                const feet = parseFloat(heightFeetInput.val()) || 0;
+                const inches = parseFloat(heightInchesInput.val()) || 0;
+                const weight = parseFloat(weightInput.val()) || 0;
+
+                // Check if all required fields have valid values
+                const isValid = (feet >= 4 && feet <= 8) &&
+                    (inches >= 0 && inches <= 11) &&
+                    (weight >= 50 && weight <= 500);
+
+                // Enable/disable next button based on validation
+                if (isValid) {
+                    nextButton.removeAttr('disabled').removeClass('disabled');
+                } else {
+                    nextButton.attr('disabled', 'disabled').addClass('disabled');
+                }
+
+                return isValid;
+            };
 
             const calculateBMI = function () {
                 const feet = parseFloat(heightFeetInput.val()) || 0;
@@ -289,14 +326,14 @@
 
                 if (totalInches > 0 && weight > 0) {
                     // BMI formula: (weight in pounds * 703) / (height in inches)²
-                    const bmi = ((weight * 703) / (totalInches * totalInches)).toFixed(1);
-                    bmiResult.val(bmi);
+                    const bmiValue = ((weight * 703) / (totalInches * totalInches));
+                    const bmiFormatted = bmiValue.toFixed(1);
+                    bmiResult.val(bmiFormatted);
 
-                    // Save BMI to answers
-                    window.whyWeight.saveAnswer('bmi', bmi);
+                    // Save BMI to answers - store as a number for accurate comparisons
+                    window.whyWeight.saveAnswer('bmi', bmiValue);
 
                     // Also add a calculated BMI range
-                    const bmiValue = parseFloat(bmi);
                     let bmiRange = '';
 
                     if (bmiValue < 18.5) {
@@ -312,9 +349,16 @@
                     if (bmiRange) {
                         window.whyWeight.saveAnswer('bmi-range', bmiRange);
                     }
+
+                    // Log information for debugging
+                    //console.log(`WhyWeight: Calculated BMI is ${bmiValue} (${bmiFormatted}) - ${bmiRange}`);
+                    //console.log(`WhyWeight: BMI routing would go to: ${bmiValue < 25 ? 'not-now' : 'pregnancy'}`);
                 } else {
                     bmiResult.val('');
                 }
+
+                // Validate form after calculating BMI
+                validateForm();
             };
 
             // Bind input events
@@ -336,6 +380,30 @@
             });
         },
 
+        checkRouting: function (currentSlideName) {
+            // Special routing for BMI slide
+            if (currentSlideName === 'bmi') {
+                // Get the BMI value and ensure it's treated as a number
+                const bmiRaw = this.answers['bmi'];
+                const bmiValue = parseFloat(bmiRaw || 0);
+
+                // Add debugging info
+                //console.log(`WhyWeight Debug: Current BMI value is "${bmiRaw}" (raw) and ${bmiValue} (parsed)`);
+
+                // If BMI is less than 25, route to not-now slide
+                if (bmiValue > 0 && bmiValue < 25) {
+                    //console.log(`WhyWeight: BMI ${bmiValue} is < 25, routing to not-now slide`);
+                    return 'not-now';
+                } else if (bmiValue >= 25) {
+                    //console.log(`WhyWeight: BMI ${bmiValue} is >= 25, routing to pregnancy slide`);
+                    return 'pregnancy';
+                }
+            }
+
+            // Default is to follow the normal flow
+            return this.getNextSlideName(currentSlideName);
+        },
+
         // Bind summary generation for results slide
         bindSummaryGeneration: function () {
             const self = this;
@@ -353,7 +421,7 @@
 
         // Generate and display a summary (keep empty for now)
         generateSummary: function () {
-            console.log('WhyWeight: Summary generation requested');
+            //console.log('WhyWeight: Summary generation requested');
             // We won't replace any content, just log this call
         },
 
@@ -422,14 +490,14 @@
 
             // Set the textarea value
             textarea.val(summaryText);
-            console.log('WhyWeight: Textarea populated with assessment data');
+            //console.log('WhyWeight: Textarea populated with assessment data');
         },
 
         // Reset all assessment data and UI elements
         resetAssessment: function () {
             // Clear the answers object
             this.answers = {};
-            console.log('WhyWeight: Answers reset');
+            //console.log('WhyWeight: Answers reset');
 
             // Reset all form inputs
             $('#height-feet, #height-inches, #weight-lbs').val('');
@@ -450,7 +518,7 @@
             // Go to the first slide
             this.goToSlide(0);
 
-            console.log('WhyWeight: Assessment reset complete');
+            //console.log('WhyWeight: Assessment reset complete');
         },
 
         // Reset all data attributes added to the assessment container
@@ -468,7 +536,7 @@
                     }
                 });
 
-                console.log('WhyWeight: Assessment data attributes reset');
+                //console.log('WhyWeight: Assessment data attributes reset');
             }
         },
 
@@ -479,8 +547,8 @@
             // Also update the assessment container's data attributes
             this.updateDataAttributes(questionId, answer);
 
-            console.log('WhyWeight: Saved answer', questionId, answer);
-            console.log('WhyWeight: Current answers:', this.answers);
+            //console.log('WhyWeight: Saved answer', questionId, answer);
+            //console.log('WhyWeight: Current answers:', this.answers);
         },
 
         // Update data attributes on the assessment container for a specific answer
@@ -490,7 +558,7 @@
             if ($assessmentContainer.length) {
                 // Set the data attribute with the answer
                 $assessmentContainer.attr(`data-answer-${questionId}`, answer);
-                console.log(`WhyWeight: Set data-answer-${questionId}="${answer}" on assessment container`);
+                //console.log(`WhyWeight: Set data-answer-${questionId}="${answer}" on assessment container`);
             } else {
                 console.error('WhyWeight: Assessment container not found');
             }
@@ -500,7 +568,7 @@
         goToSlide: function (index) {
             if (this.swiper) {
                 this.swiper.slideTo(index);
-                console.log('WhyWeight: Navigated to slide', index);
+                //console.log('WhyWeight: Navigated to slide', index);
             }
         },
 
@@ -508,7 +576,7 @@
         navigateByName: function (slideName) {
             if (this.slideMap[slideName] !== undefined) {
                 this.goToSlide(this.slideMap[slideName]);
-                console.log('WhyWeight: Navigated to slide', slideName);
+                //console.log('WhyWeight: Navigated to slide', slideName);
             } else {
                 console.error('WhyWeight: Could not find slide named', slideName);
             }
@@ -517,17 +585,17 @@
         clearNavigationLock: function () {
             // Emergency function to clear navigation lock if something goes wrong
             this.isNavigating = false;
-            console.log('WhyWeight: Navigation lock cleared by emergency function');
+            //console.log('WhyWeight: Navigation lock cleared by emergency function');
         }
     };
 
     // Document ready
     $(function () {
-        console.log('WhyWeight: DOM ready');
+        //console.log('WhyWeight: DOM ready');
 
         // Test if Swiper exists
         if (typeof Swiper === 'function') {
-            console.log('WhyWeight: Swiper is loaded successfully');
+            //console.log('WhyWeight: Swiper is loaded successfully');
 
             // Initialize WhyWeight
             window.whyWeight.init();
