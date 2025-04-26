@@ -13,6 +13,8 @@
         // Object to store assessment answers
         answers: {},
 
+        recommendations: [],
+
         // Slide name to index mapping
         slideMap: {},
 
@@ -316,6 +318,7 @@
                 return isValid;
             };
 
+            // Correctly defined as a function expression (const function = ...)
             const calculateBMI = function () {
                 const feet = parseFloat(heightFeetInput.val()) || 0;
                 const inches = parseFloat(heightInchesInput.val()) || 0;
@@ -327,32 +330,33 @@
                 if (totalInches > 0 && weight > 0) {
                     // BMI formula: (weight in pounds * 703) / (height in inches)²
                     const bmiValue = ((weight * 703) / (totalInches * totalInches));
-                    const bmiFormatted = bmiValue.toFixed(1);
+
+                    // Round to hundredths (two decimal places) for storage and calculation
+                    const bmiRounded = parseFloat(bmiValue.toFixed(2));
+
+                    // Format to one decimal place for display in the BMI field
+                    const bmiFormatted = bmiRounded.toFixed(1);
                     bmiResult.val(bmiFormatted);
 
-                    // Save BMI to answers - store as a number for accurate comparisons
-                    window.whyWeight.saveAnswer('bmi', bmiValue);
+                    // Save the rounded BMI to answers
+                    window.whyWeight.saveAnswer('bmi', bmiRounded);
 
                     // Also add a calculated BMI range
                     let bmiRange = '';
 
-                    if (bmiValue < 18.5) {
+                    if (bmiRounded < 18.5) {
                         bmiRange = 'underweight';
-                    } else if (bmiValue >= 18.5 && bmiValue < 25) {
+                    } else if (bmiRounded >= 18.5 && bmiRounded < 25) {
                         bmiRange = 'normal';
-                    } else if (bmiValue >= 25 && bmiValue < 30) {
+                    } else if (bmiRounded >= 25 && bmiRounded < 30) {
                         bmiRange = 'overweight';
-                    } else if (bmiValue >= 30) {
+                    } else if (bmiRounded >= 30) {
                         bmiRange = 'obese';
                     }
 
                     if (bmiRange) {
                         window.whyWeight.saveAnswer('bmi-range', bmiRange);
                     }
-
-                    // Log information for debugging
-                    //console.log(`WhyWeight: Calculated BMI is ${bmiValue} (${bmiFormatted}) - ${bmiRange}`);
-                    //console.log(`WhyWeight: BMI routing would go to: ${bmiValue < 25 ? 'not-now' : 'pregnancy'}`);
                 } else {
                     bmiResult.val('');
                 }
@@ -380,22 +384,49 @@
             });
         },
 
+        // checkRouting: function (currentSlideName) {
+        //     // Special routing for BMI slide
+        //     if (currentSlideName === 'bmi') {
+        //         // Get the BMI value and ensure it's treated as a number
+        //         const bmiRaw = this.answers['bmi'];
+        //         const bmiValue = parseFloat(bmiRaw || 0);
+
+        //         // Add debugging info
+        //         //console.log(`WhyWeight Debug: Current BMI value is "${bmiRaw}" (raw) and ${bmiValue} (parsed)`);
+
+        //         // If BMI is less than 25, route to not-now slide
+        //         if (bmiValue > 0 && bmiValue < 25) {
+        //             //console.log(`WhyWeight: BMI ${bmiValue} is < 25, routing to not-now slide`);
+        //             return 'not-now';
+        //         } else if (bmiValue >= 25) {
+        //             //console.log(`WhyWeight: BMI ${bmiValue} is >= 25, routing to pregnancy slide`);
+        //             return 'pregnancy';
+        //         }
+        //     }
+
+        //     // Default is to follow the normal flow
+        //     return this.getNextSlideName(currentSlideName);
+        // },
+
+        // Update the checkRouting function to handle the under-12 case
+        // (this isn't actually needed since we use data-navigate="not-now" in the HTML,
+        // but showing for completeness)
         checkRouting: function (currentSlideName) {
+            // Check for age under 12
+            if (currentSlideName === 'age' && this.answers['age-range'] === 'under-12') {
+                return 'not-now';
+            }
+
             // Special routing for BMI slide
             if (currentSlideName === 'bmi') {
                 // Get the BMI value and ensure it's treated as a number
                 const bmiRaw = this.answers['bmi'];
                 const bmiValue = parseFloat(bmiRaw || 0);
 
-                // Add debugging info
-                //console.log(`WhyWeight Debug: Current BMI value is "${bmiRaw}" (raw) and ${bmiValue} (parsed)`);
-
                 // If BMI is less than 25, route to not-now slide
                 if (bmiValue > 0 && bmiValue < 25) {
-                    //console.log(`WhyWeight: BMI ${bmiValue} is < 25, routing to not-now slide`);
                     return 'not-now';
                 } else if (bmiValue >= 25) {
-                    //console.log(`WhyWeight: BMI ${bmiValue} is >= 25, routing to pregnancy slide`);
                     return 'pregnancy';
                 }
             }
@@ -419,13 +450,49 @@
             });
         },
 
-        // Generate and display a summary (keep empty for now)
+        // Update the generateSummary function to provide age-specific guidance
         generateSummary: function () {
-            //console.log('WhyWeight: Summary generation requested');
-            // We won't replace any content, just log this call
+            // Clear any previous recommendations
+            this.recommendations = [];
+            console.log('WhyWeight: Generating summary and storing visible recommendations');
+
+            // Find all result items
+            const resultItems = $('#results-content .ww-result-item');
+
+            // Check each result item for visibility
+            resultItems.each((index, item) => {
+                const $item = $(item);
+                const isVisible = $item.css('display') !== 'none';
+
+                // If the item is visible, store its information
+                if (isVisible) {
+                    const id = $item.attr('id') || `result-${index}`;
+                    const title = $item.find('.ww-result-title').text().trim();
+                    let description = $item.find('.ww-result-description').text().trim();
+
+                    // Add age-specific note for liraglutide for 12-17 age group
+                    if (id === 'liraglutide-result' && this.answers['age-range'] === '12-17') {
+                        description += ' This is the only FDA-approved weight management medication for individuals aged 12-17.';
+                    }
+
+                    // Store the recommendation
+                    this.recommendations.push({
+                        id: id,
+                        title: title,
+                        description: description
+                    });
+
+                    console.log(`WhyWeight: Stored visible recommendation: ${title}`);
+                }
+            });
+
+            // Store the count of recommendations
+            this.answers['recommendation-count'] = this.recommendations.length;
+            console.log(`WhyWeight: Stored ${this.recommendations.length} recommendations`);
         },
 
         // Populate the textarea with answers data
+        // Enhanced populateTextarea function to include visible result items
         populateTextarea: function () {
             const textarea = $('#wsf-1-field-5');
             if (!textarea.length) {
@@ -440,6 +507,8 @@
             const answerLabels = {
                 'bmi': 'BMI',
                 'bmi-range': 'BMI Category',
+                'age-range': 'Age Range',
+                'food-cravings': 'Food Cravings',
                 'pregnancy': 'Pregnant or breastfeeding',
                 'binge-eating': 'Binge eating',
                 'exercise-program': 'Tried exercise program',
@@ -469,18 +538,26 @@
             // Loop through remaining answers
             for (const questionId in this.answers) {
                 // Skip height and weight as they're already handled
-                if (['height-feet', 'height-inches', 'weight-lbs'].includes(questionId)) {
+                if (['height-feet', 'height-inches', 'weight-lbs', 'recommendation-count'].includes(questionId)) {
                     continue;
                 }
 
                 const answer = this.answers[questionId];
                 const label = answerLabels[questionId] || questionId;
 
-                // Format the answer value (handle yes/no values)
+                // Format the answer value (handle special cases)
                 let displayValue = answer;
-                if (yesNoFormat[answer]) {
+
+                // Special formatting for BMI - ensure it's displayed with 2 decimal places
+                if (questionId === 'bmi') {
+                    // Force formatting to 2 decimal places regardless of how it was stored
+                    const bmiNum = parseFloat(answer);
+                    displayValue = bmiNum.toFixed(2);
+                }
+                else if (yesNoFormat[answer]) {
                     displayValue = yesNoFormat[answer];
-                } else if (questionId === 'bmi-range') {
+                }
+                else if (questionId === 'bmi-range') {
                     // Capitalize the first letter of BMI range
                     displayValue = answer.charAt(0).toUpperCase() + answer.slice(1);
                 }
@@ -488,9 +565,65 @@
                 summaryText += `${label}: ${displayValue}\n`;
             }
 
+            // Add a separator for recommendations
+            summaryText += '\n----------------------------------------\n';
+            summaryText += 'Recommended Treatment Options:\n\n';
+
+            // Use stored recommendations instead of trying to read visible elements
+            if (this.recommendations && this.recommendations.length > 0) {
+                // Process each stored recommendation
+                this.recommendations.forEach(rec => {
+                    if (rec.title) {
+                        summaryText += rec.title + ':\n';
+                    }
+
+                    if (rec.description) {
+                        // Split description into lines and format with bullet points
+                        const lines = rec.description.split('\n').map(line => line.trim()).filter(line => line);
+                        lines.forEach(line => {
+                            summaryText += '- ' + line + '\n';
+                        });
+                    }
+
+                    // Add spacing between items
+                    summaryText += '\n';
+                });
+            } else {
+                // Special case: If we're on the contact slide but no recommendations were stored
+                // Try to trigger the generateSummary function to capture them now
+                this.generateSummary();
+
+                // Check if we got any recommendations after regenerating
+                if (this.recommendations && this.recommendations.length > 0) {
+                    // Add the recommendations we just captured
+                    this.recommendations.forEach(rec => {
+                        if (rec.title) {
+                            summaryText += rec.title + ':\n';
+                        }
+
+                        if (rec.description) {
+                            const lines = rec.description.split('\n').map(line => line.trim()).filter(line => line);
+                            lines.forEach(line => {
+                                summaryText += '- ' + line + '\n';
+                            });
+                        }
+
+                        summaryText += '\n';
+                    });
+                } else {
+                    // Fallback if still no recommendations
+                    summaryText += 'Based on your assessment results, we recommend scheduling a consultation with our weight management specialists to discuss personalized treatment options.\n\n';
+                }
+            }
+
+            // Add a closing note
+            summaryText += '----------------------------------------\n';
+            summaryText += 'Please bring this summary to your consultation appointment.\n';
+            summaryText += 'Date generated: ' + new Date().toLocaleDateString();
+
             // Set the textarea value
             textarea.val(summaryText);
-            //console.log('WhyWeight: Textarea populated with assessment data');
+            console.log('WhyWeight: Textarea populated with assessment data and stored recommendations');
         },
 
         // Reset all assessment data and UI elements
