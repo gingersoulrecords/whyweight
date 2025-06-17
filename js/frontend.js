@@ -255,7 +255,7 @@
 
                     // Process navigation after a small delay
                     setTimeout(function () {
-                        //console.log('WhyWeight: Processing radio button navigation to:', navigateTo);
+                        //console.log('WhyWeight: Processing radio button navigation to:', navigateAction);
 
                         if (navigateTo === 'next') {
                             const currentSlideName = $('.swiper-slide').eq(self.swiper.activeIndex).data('slide-name');
@@ -384,30 +384,6 @@
             });
         },
 
-        // checkRouting: function (currentSlideName) {
-        //     // Special routing for BMI slide
-        //     if (currentSlideName === 'bmi') {
-        //         // Get the BMI value and ensure it's treated as a number
-        //         const bmiRaw = this.answers['bmi'];
-        //         const bmiValue = parseFloat(bmiRaw || 0);
-
-        //         // Add debugging info
-        //         //console.log(`WhyWeight Debug: Current BMI value is "${bmiRaw}" (raw) and ${bmiValue} (parsed)`);
-
-        //         // If BMI is less than 25, route to not-now slide
-        //         if (bmiValue > 0 && bmiValue < 25) {
-        //             //console.log(`WhyWeight: BMI ${bmiValue} is < 25, routing to not-now slide`);
-        //             return 'not-now';
-        //         } else if (bmiValue >= 25) {
-        //             //console.log(`WhyWeight: BMI ${bmiValue} is >= 25, routing to pregnancy slide`);
-        //             return 'pregnancy';
-        //         }
-        //     }
-
-        //     // Default is to follow the normal flow
-        //     return this.getNextSlideName(currentSlideName);
-        // },
-
         // Update the checkRouting function to handle the under-12 case
         // (this isn't actually needed since we use data-navigate="not-now" in the HTML,
         // but showing for completeness)
@@ -450,17 +426,37 @@
             });
         },
 
-        // Update the generateSummary function to provide age-specific guidance
+        // Update the generateSummary function to include lifestyle recommendations
         generateSummary: function () {
             // Clear any previous recommendations
             this.recommendations = [];
             console.log('WhyWeight: Generating summary and storing visible recommendations');
 
-            // Find all result items
-            const resultItems = $('#results-content .ww-result-item');
+            // Always include the lifestyle foundation recommendations
+            const lifestyleItems = [
+                {
+                    id: 'healthy-diet-result',
+                    title: 'Healthy Eating',
+                    description: 'A balanced, sustainable approach to nutrition is the foundation of any successful weight management plan. Focus on whole foods, mindful eating, and portion control.'
+                },
+                {
+                    id: 'regular-exercise-result',
+                    title: 'Physical Activity',
+                    description: 'Regular physical activity is essential for weight management and overall health. Aim for a combination of cardiovascular exercise, strength training, and everyday movement.'
+                }
+            ];
+
+            // Add lifestyle recommendations
+            lifestyleItems.forEach(item => {
+                this.recommendations.push(item);
+                console.log(`WhyWeight: Stored lifestyle recommendation: ${item.title}`);
+            });
+
+            // Find all medical result items
+            const medicalResultItems = $('#results-content .ww-result-item').not('#healthy-diet-result, #regular-exercise-result');
 
             // Check each result item for visibility
-            resultItems.each((index, item) => {
+            medicalResultItems.each((index, item) => {
                 const $item = $(item);
                 const isVisible = $item.css('display') !== 'none';
 
@@ -491,8 +487,7 @@
             console.log(`WhyWeight: Stored ${this.recommendations.length} recommendations`);
         },
 
-        // Populate the textarea with answers data
-        // Enhanced populateTextarea function to include visible result items
+        // Enhanced populateTextarea function to include both lifestyle and medical recommendations
         populateTextarea: function () {
             const textarea = $('#wsf-1-field-5');
             if (!textarea.length) {
@@ -571,8 +566,40 @@
 
             // Use stored recommendations instead of trying to read visible elements
             if (this.recommendations && this.recommendations.length > 0) {
-                // Process each stored recommendation
-                this.recommendations.forEach(rec => {
+                // First add lifestyle foundation recommendations
+                summaryText += 'LIFESTYLE FOUNDATION:\n';
+
+                // Filter for lifestyle recommendations
+                const lifestyleRecs = this.recommendations.filter(rec =>
+                    rec.id === 'healthy-diet-result' || rec.id === 'regular-exercise-result');
+
+                // Process each lifestyle recommendation
+                lifestyleRecs.forEach(rec => {
+                    if (rec.title) {
+                        summaryText += rec.title + ':\n';
+                    }
+
+                    if (rec.description) {
+                        // Split description into lines and format with bullet points
+                        const lines = rec.description.split('\n').map(line => line.trim()).filter(line => line);
+                        lines.forEach(line => {
+                            summaryText += '- ' + line + '\n';
+                        });
+                    }
+
+                    // Add spacing between items
+                    summaryText += '\n';
+                });
+
+                // Then add medical options with appropriate header
+                summaryText += 'MEDICAL OPTIONS:\n';
+
+                // Filter for medical recommendations
+                const medicalRecs = this.recommendations.filter(rec =>
+                    rec.id !== 'healthy-diet-result' && rec.id !== 'regular-exercise-result');
+
+                // Process each medical recommendation
+                medicalRecs.forEach(rec => {
                     if (rec.title) {
                         summaryText += rec.title + ':\n';
                     }
@@ -595,8 +622,38 @@
 
                 // Check if we got any recommendations after regenerating
                 if (this.recommendations && this.recommendations.length > 0) {
-                    // Add the recommendations we just captured
-                    this.recommendations.forEach(rec => {
+                    // Add lifestyle recommendations first
+                    summaryText += 'LIFESTYLE FOUNDATION:\n';
+
+                    // Filter for lifestyle recommendations
+                    const lifestyleRecs = this.recommendations.filter(rec =>
+                        rec.id === 'healthy-diet-result' || rec.id === 'regular-exercise-result');
+
+                    // Process each lifestyle recommendation
+                    lifestyleRecs.forEach(rec => {
+                        if (rec.title) {
+                            summaryText += rec.title + ':\n';
+                        }
+
+                        if (rec.description) {
+                            const lines = rec.description.split('\n').map(line => line.trim()).filter(line => line);
+                            lines.forEach(line => {
+                                summaryText += '- ' + line + '\n';
+                            });
+                        }
+
+                        summaryText += '\n';
+                    });
+
+                    // Then add medical options
+                    summaryText += 'MEDICAL OPTIONS:\n';
+
+                    // Filter for medical recommendations
+                    const medicalRecs = this.recommendations.filter(rec =>
+                        rec.id !== 'healthy-diet-result' && rec.id !== 'regular-exercise-result');
+
+                    // Process each medical recommendation
+                    medicalRecs.forEach(rec => {
                         if (rec.title) {
                             summaryText += rec.title + ':\n';
                         }
